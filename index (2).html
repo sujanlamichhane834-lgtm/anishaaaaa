@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For Anisha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --maroon:#5c1421;
+    --maroon-deep:#3a0d16;
+    --gold:#e8b451;
+    --gold-soft:#f3d089;
+    --cream:#f7efe0;
+    --ink:#1c0e0a;
+    --lane-w: min(19vw, 110px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0; height:100%; overflow:hidden; background:var(--maroon-deep); font-family:'Manrope', sans-serif; color:var(--cream); touch-action:manipulation;}
+  #app{position:fixed; inset:0; overflow:hidden;}
+
+  .bg{
+    position:absolute; inset:0;
+    background-image:url('bg.png');
+    background-size:cover;
+    background-position:center 20%;
+    filter:saturate(1.05);
+  }
+  .bg::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(20,6,10,.38) 0%, rgba(20,6,10,.08) 32%, rgba(20,6,10,.16) 55%, rgba(20,6,10,.62) 100%);
+  }
+
+  /* ---------- SCREENS ---------- */
+  .screen{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:6vh 6vw;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .5s ease;
+  }
+  .screen.active{opacity:1; visibility:visible; pointer-events:auto;}
+
+  .eyebrow{
+    font-size:.72rem; letter-spacing:.14em; color:var(--gold-soft); opacity:.95;
+    margin:0 0 .6rem; font-weight:600;
+    text-shadow:0 1px 10px rgba(0,0,0,.7);
+  }
+  h1.glow{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    font-size:clamp(2.6rem, 9vw, 4.6rem);
+    line-height:1.05;
+    margin:0 0 .5rem;
+    color:var(--gold-soft);
+    text-shadow: 0 0 18px rgba(232,180,81,.55), 0 0 46px rgba(232,180,81,.28);
+  }
+  .lede{
+    max-width:440px;
+    font-size:1rem;
+    line-height:1.6;
+    color:#f3e6da;
+    margin:0 0 2.2rem;
+    font-weight:600;
+    text-shadow:0 1px 14px rgba(0,0,0,.85), 0 1px 3px rgba(0,0,0,.9);
+  }
+  .lede em{color:var(--gold-soft); font-style:normal; font-weight:700;}
+
+  .btn{
+    appearance:none; border:1.5px solid var(--gold);
+    background:rgba(232,180,81,.12);
+    color:var(--gold-soft);
+    font-family:'Manrope', sans-serif;
+    font-weight:700; font-size:1.02rem;
+    letter-spacing:.02em;
+    padding:.95rem 2.3rem;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease, box-shadow .2s ease;
+    box-shadow:0 0 0 rgba(232,180,81,0);
+  }
+  .btn:hover{background:rgba(232,180,81,.22); box-shadow:0 0 28px rgba(232,180,81,.35);}
+  .btn:active{transform:scale(.96);}
+  .btn.small{padding:.7rem 1.6rem; font-size:.88rem; margin-top:.9rem; border-color:rgba(247,239,224,.4); color:var(--cream); background:rgba(0,0,0,.15);}
+  .btn.small:hover{background:rgba(0,0,0,.3); box-shadow:none;}
+
+  .hint{margin-top:1.4rem; font-size:.76rem; color:rgba(247,239,224,.55); letter-spacing:.03em;}
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 0;
+    z-index:5; pointer-events:none;
+  }
+  .stat{
+    background:rgba(20,8,10,.45);
+    border:1px solid rgba(232,180,81,.3);
+    border-radius:14px;
+    padding:8px 16px;
+    backdrop-filter:blur(4px);
+  }
+  .stat .num{font-size:1.3rem; font-weight:800; color:var(--gold-soft); line-height:1;}
+  .stat .lab{font-size:.62rem; letter-spacing:.1em; opacity:.7; text-transform:uppercase; margin-top:2px;}
+  #lives{display:flex; gap:6px; font-size:1.1rem;}
+
+  /* ---------- GAME ---------- */
+  #gameWrap{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  #board{
+    position:relative;
+    width:calc(var(--lane-w) * 4);
+    height:78vh; max-height:720px;
+    background:rgba(10,4,5,.38);
+    border-left:1px solid rgba(232,180,81,.25);
+    border-right:1px solid rgba(232,180,81,.25);
+    overflow:hidden;
+    border-radius:8px;
+    touch-action:none;
+  }
+  .lane-line{
+    position:absolute; top:0; bottom:0;
+    width:1px; background:rgba(232,180,81,.14);
+  }
+  #hitline{
+    position:absolute; left:0; right:0;
+    bottom:104px;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow:0 0 14px 2px rgba(232,180,81,.6);
+  }
+  .tile{
+    position:absolute;
+    width:calc(var(--lane-w) - 6px);
+    height:110px;
+    border-radius:6px;
+    background:linear-gradient(180deg,#2a0f14,#170709);
+    border:1px solid rgba(232,180,81,.35);
+    box-shadow:inset 0 0 12px rgba(0,0,0,.6);
+  }
+  .tile.pop{
+    animation:pop .22s ease forwards;
+  }
+  @keyframes pop{
+    to{ transform:scale(1.25); opacity:0; }
+  }
+  .tile.bad{
+    animation:sink .18s ease forwards;
+  }
+  @keyframes sink{
+    to{ transform:translateY(18px); opacity:0; }
+  }
+
+  #keys{
+    position:absolute; left:0; right:0; bottom:0; height:104px;
+    display:flex;
+  }
+  .key{
+    flex:1;
+    border-left:1px solid rgba(247,239,224,.18);
+    display:flex; align-items:center; justify-content:center;
+    color:rgba(247,239,224,.35);
+    font-size:.72rem; letter-spacing:.08em; font-weight:700;
+    background:rgba(247,239,224,.03);
+    transition:background .05s ease;
+    user-select:none;
+    touch-action:none;
+  }
+  .key:first-child{border-left:none;}
+  .key.pressed{background:rgba(232,180,81,.28);}
+
+  #flash{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%);
+    font-family:'Cormorant Garamond', serif; font-weight:600;
+    font-size:1.6rem; color:var(--gold-soft);
+    opacity:0; pointer-events:none;
+  }
+  #flash.show{animation:flashPop .55s ease forwards;}
+  @keyframes flashPop{
+    0%{opacity:0; transform:translate(-50%,-40%) scale(.8);}
+    25%{opacity:1; transform:translate(-50%,-50%) scale(1.05);}
+    100%{opacity:0; transform:translate(-50%,-58%) scale(1);}
+  }
+
+  #musicNote{
+    position:absolute; bottom:16px; right:16px;
+    font-size:.7rem; color:rgba(247,239,224,.55);
+    display:flex; align-items:center; gap:6px;
+    z-index:5;
+  }
+  .bar{width:3px; height:10px; background:var(--gold-soft); border-radius:2px; animation:bounce 1s ease-in-out infinite;}
+  .bar:nth-child(2){animation-delay:.15s;}
+  .bar:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{0%,100%{height:6px;} 50%{height:16px;}}
+
+  .score-final{
+    font-family:'Cormorant Garamond', serif;
+    font-size:clamp(3rem, 14vw, 5rem);
+    font-weight:600;
+    color:var(--gold-soft);
+    line-height:1;
+    margin-bottom:.2rem;
+    text-shadow:0 0 20px rgba(232,180,81,.5);
+  }
+  .score-label{font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; opacity:.7; margin-bottom:1.6rem;}
+
+  @media (max-height: 620px){
+    #board{height:70vh;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bg"></div>
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <p class="eyebrow">a little something for you</p>
+    <h1 class="glow">Hi Anisha</h1>
+    <p class="lede">I'm not a good singer, but I hope you like this one.</p>
+    <button class="btn" id="btnStart">Play</button>
+    <p class="hint">tap or use A&nbsp;S&nbsp;D&nbsp;F</p>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div id="hud">
+      <div class="stat"><div class="num" id="scoreNum">0</div><div class="lab">score</div></div>
+      <div class="stat"><div class="num" id="levelNum">1</div><div class="lab">level</div></div>
+      <div class="stat"><div id="lives">❤️❤️❤️</div></div>
+    </div>
+    <div id="gameWrap">
+      <div id="board">
+        <div class="lane-line" style="left:25%"></div>
+        <div class="lane-line" style="left:50%"></div>
+        <div class="lane-line" style="left:75%"></div>
+        <div id="hitline"></div>
+        <div id="flash"></div>
+        <div id="keys">
+          <div class="key" data-lane="0">A</div>
+          <div class="key" data-lane="1">S</div>
+          <div class="key" data-lane="2">D</div>
+          <div class="key" data-lane="3">F</div>
+        </div>
+      </div>
+    </div>
+    <div id="musicNote"><div class="bar"></div><div class="bar"></div><div class="bar"></div><span>playing for you</span></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="screen" id="screen-over">
+    <p class="eyebrow" id="overEyebrow">nice run</p>
+    <div class="score-final" id="finalScore">0</div>
+    <div class="score-label">points · reached level <span id="finalLevel">1</span></div>
+    <p class="lede" id="overMsg">Thank you for playing. I really appreciate it.</p>
+    <button class="btn" id="btnRetry">Play again</button>
+    <button class="btn small" id="btnIntro">Back to start</button>
+  </div>
+</div>
+
+<audio id="song" src="song.mp3" preload="auto" loop></audio>
+
+<script>
+(function(){
+  const introScreen = document.getElementById('screen-intro');
+  const gameScreen = document.getElementById('screen-game');
+  const overScreen = document.getElementById('screen-over');
+  const song = document.getElementById('song');
+  const board = document.getElementById('board');
+  const scoreNum = document.getElementById('scoreNum');
+  const levelNum = document.getElementById('levelNum');
+  const livesEl = document.getElementById('lives');
+  const flashEl = document.getElementById('flash');
+  const keys = document.querySelectorAll('.key');
+
+  const LANES = 4;
+  let laneW = 0, boardH = 0, hitlineY = 0;
+
+  function measure(){
+    const r = board.getBoundingClientRect();
+    laneW = r.width / LANES;
+    boardH = r.height;
+    hitlineY = boardH - 104;
+  }
+
+  let tiles = [];
+  let score = 0, level = 1, lives = 3;
+  let spawnTimer = 0, spawnInterval = 850; // ms between rows, decreases with level
+  let fallSpeed = 0.28; // px per ms, increases with level
+  let running = false;
+  let lastTime = 0;
+  let lastLane = -1;
+
+  const encourage = ["Nice touch.", "You've got rhythm.", "Smooth.", "Right on beat.", "Keep going!", "That's the one."];
+
+  function setScreen(name){
+    [introScreen, gameScreen, overScreen].forEach(s => s.classList.remove('active'));
+    if(name==='intro') introScreen.classList.add('active');
+    if(name==='game') gameScreen.classList.add('active');
+    if(name==='over') overScreen.classList.add('active');
+  }
+
+  function resetGame(){
+    tiles.forEach(t=>t.el.remove());
+    tiles = [];
+    score = 0; level = 1; lives = 3;
+    spawnTimer = 0; spawnInterval = 850; fallSpeed = 0.28;
+    lastLane = -1;
+    updateHUD();
+  }
+
+  function updateHUD(){
+    scoreNum.textContent = score;
+    levelNum.textContent = level;
+    livesEl.textContent = '❤️'.repeat(Math.max(lives,0)) + '🖤'.repeat(Math.max(3-lives,0));
+  }
+
+  function pickLane(){
+    let lane = Math.floor(Math.random()*LANES);
+    if(lane === lastLane){
+      lane = (lane + 1 + Math.floor(Math.random()*3)) % LANES;
+    }
+    lastLane = lane;
+    return lane;
+  }
+
+  function spawnTile(){
+    const lane = pickLane();
+    const el = document.createElement('div');
+    el.className = 'tile';
+    el.style.left = (lane*laneW + 3) + 'px';
+    el.style.top = '-112px';
+    board.insertBefore(el, document.getElementById('keys'));
+    tiles.push({lane, y:-112, el, done:false});
+  }
+
+  function levelUp(){
+    level++;
+    spawnInterval = Math.max(340, spawnInterval - 55);
+    fallSpeed = Math.min(0.95, fallSpeed + 0.07);
+    flashMsg('Level ' + level + '!');
+  }
+
+  function flashMsg(text){
+    flashEl.textContent = text;
+    flashEl.classList.remove('show');
+    void flashEl.offsetWidth;
+    flashEl.classList.add('show');
+  }
+
+  function hitTile(lane){
+    // any tile that's currently visible on the board in this lane can be tapped —
+    // pick the one closest to the bottom (next to arrive) rather than requiring
+    // precise timing near the hitline.
+    let best = null;
+    for(const t of tiles){
+      if(t.done || t.lane !== lane) continue;
+      if(t.y < -150 || t.y > boardH) continue; // not visible yet / already gone
+      if(!best || t.y > best.y) best = t;
+    }
+    if(best){
+      best.done = true;
+      best.el.classList.add('pop');
+      setTimeout(()=>best.el.remove(), 220);
+      score += 10;
+      if(score % 100 === 0) levelUp();
+      if(Math.random() < 0.22) flashMsg(encourage[Math.floor(Math.random()*encourage.length)]);
+      updateHUD();
+    } else {
+      loseLife();
+    }
+  }
+
+  function loseLife(){
+    lives--;
+    updateHUD();
+    board.style.borderColor = 'rgba(220,60,60,.6)';
+    setTimeout(()=>{ board.style.borderColor=''; }, 150);
+    if(lives <= 0) endGame();
+  }
+
+  function endGame(){
+    running = false;
+    song.pause();
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalLevel').textContent = level;
+    setScreen('over');
+  }
+
+  function tick(ts){
+    if(!running) return;
+    if(!lastTime) lastTime = ts;
+    const dt = ts - lastTime;
+    lastTime = ts;
+
+    spawnTimer += dt;
+    if(spawnTimer >= spawnInterval){
+      spawnTimer = 0;
+      spawnTile();
+    }
+
+    for(const t of tiles){
+      if(t.done) continue;
+      t.y += fallSpeed * dt;
+      t.el.style.top = t.y + 'px';
+      if(t.y > hitlineY + 40 && !t.done){
+        t.done = true;
+        t.el.classList.add('bad');
+        setTimeout(()=>t.el.remove(), 200);
+        loseLife();
+      }
+    }
+    tiles = tiles.filter(t => !(t.done && t.y > boardH + 40) && t.y < boardH + 200);
+
+    if(running) requestAnimationFrame(tick);
+  }
+
+  function startGame(){
+    measure();
+    resetGame();
+    setScreen('game');
+    song.currentTime = 0;
+    song.volume = 0.85;
+    song.play().catch(()=>{});
+    running = true;
+    lastTime = 0;
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('btnStart').addEventListener('click', startGame);
+  document.getElementById('btnRetry').addEventListener('click', startGame);
+  document.getElementById('btnIntro').addEventListener('click', ()=>{ setScreen('intro'); });
+
+  // Work out which lane a raw x-coordinate falls in, straight from the board's
+  // own geometry — this avoids relying on which exact DOM element a finger
+  // lands on, which is what makes touch unreliable on phones.
+  const keysBar = document.getElementById('keys');
+
+  function laneFromClientX(clientX){
+    const rect = board.getBoundingClientRect();
+    let idx = Math.floor((clientX - rect.left) / (rect.width / LANES));
+    if(idx < 0) idx = 0;
+    if(idx > LANES - 1) idx = LANES - 1;
+    return idx;
+  }
+
+  function flashKey(lane){
+    const keyEl = document.querySelector('.key[data-lane="'+lane+'"]');
+    keyEl.classList.add('pressed');
+    setTimeout(()=>keyEl.classList.remove('pressed'), 70);
+  }
+
+  function handleTapAt(clientX){
+    const lane = laneFromClientX(clientX);
+    flashKey(lane);
+    if(!running) return;
+    hitTile(lane);
+  }
+
+  let touchActive = false;
+
+  // Real touch input — the whole board is tappable (top to bottom of each
+  // lane), not just the thin key strip. A mouse can land precisely on a
+  // 104px strip; a thumb tapping fast often can't, so the target needs to
+  // be much bigger on touch devices. Handles every finger down, supports
+  // tapping multiple lanes at once.
+  board.addEventListener('touchstart', (e)=>{
+    e.preventDefault();
+    touchActive = true;
+    for(let i=0; i<e.changedTouches.length; i++){
+      handleTapAt(e.changedTouches[i].clientX);
+    }
+  }, {passive:false});
+
+  board.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, {passive:false});
+
+  // Mouse (desktop) — ignored on devices that just told us they're touch.
+  board.addEventListener('mousedown', (e)=>{
+    if(touchActive) return;
+    handleTapAt(e.clientX);
+  });
+
+  window.addEventListener('keydown', (e)=>{
+    if(!running) return;
+    const map = {a:0, s:1, d:2, f:3};
+    const lane = map[e.key.toLowerCase()];
+    if(lane !== undefined) hitTile(lane);
+  });
+
+  window.addEventListener('resize', measure);
+  window.addEventListener('orientationchange', measure);
+  measure();
+})();
+</script>
+</body>
+</html>
